@@ -51,7 +51,6 @@ function ColumnContainer({ column, createTask, tasks }) {
 
       {column.title === "Todo" && (
         <>
-       
           <TaskModal column={column} createTask={createTask} />
         </>
       )}
