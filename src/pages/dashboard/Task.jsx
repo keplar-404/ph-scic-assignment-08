@@ -7,10 +7,38 @@ import {
 import React from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-export default function Task() {
+export default function Task({ task }) {
+  const {
+    setNodeRef,
+    attributes,
+    listeners,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: task.id,
+    data: {
+      type: "Task",
+      task,
+    },
+  });
+
+  const style = {
+    transition,
+    transform: CSS.Transform.toString(transform),
+  };
+
   return (
-    <div className="w-[20rem]">
+    <div
+      className="w-[20rem]"
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+    >
       <Accordion>
         <div className="flex w-full justify-center items-center">
           <DragIndicatorIcon className="cursor-pointer mt-[-3px] pl-[3px]" />
@@ -22,18 +50,17 @@ export default function Task() {
             className="w-full"
           >
             <div className="flex w-full justify-between">
-              <p>Title</p>
+              <p>{task.title}</p>
 
               <Chip label="Priority" color="success" />
             </div>
           </AccordionSummary>
         </div>
         <AccordionDetails>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-            malesuada lacus ex, sit amet blandit leo lobortis eget.
+          <p>{task.description}</p>
+          <p className="mt-[3rem]">
+            <span className="font-bold">Deadline:</span> {task.deadline}
           </p>
-          <p>Deadline: 21/8/2023</p>
         </AccordionDetails>
       </Accordion>
     </div>

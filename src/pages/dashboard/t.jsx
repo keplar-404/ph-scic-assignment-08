@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import ColumnContainer from "./ColumnContainer";
+import TaskColoumn from "./TaskColoumn";
+import { Button } from "@mui/material";
+import TaskModal from "./Modal";
 import {
   DndContext,
   DragOverlay,
@@ -7,29 +9,29 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+
 import { arrayMove } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
-import TaskCard from "./TaskCard";
+import Task from "./Task";
 
-function KanbanBoard() {
-  const [columns, setColumns] = useState([
-    {
-      id: generateId(),
-      title: "Todo",
-    },
-    {
-      id: generateId(),
-      title: "Ongoing",
-    },
-    {
-      id: generateId(),
-      title: "Completed",
-    },
-  ]);
-
-  const [tasks, setTasks] = useState([]);
-
+export default function Dashboard() {
+  const [todoTasks, setTodoTasks] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
+
+  const column = [
+    {
+      id: 1,
+      name: "Todo",
+    },
+    {
+      id: 2,
+      name: "Ongoing",
+    },
+    {
+      id: 3,
+      name: "Completed",
+    },
+  ];
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -38,49 +40,6 @@ function KanbanBoard() {
       },
     })
   );
-
-  return (
-    <div
-      className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden px-[40px] bg-[#f9fbfd]
-    "
-    >
-      <DndContext
-        sensors={sensors}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-      >
-        <div className="m-auto flex gap-4">
-          <div className="flex gap-4">
-            {columns.map((col) => (
-              <ColumnContainer
-                key={col.id}
-                column={col}
-                createTask={createTask}
-                tasks={tasks.filter((task) => task.columnId === col.id)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {createPortal(
-          <DragOverlay>
-            {activeTask && <TaskCard task={activeTask} />}
-          </DragOverlay>,
-          document.body
-        )}
-      </DndContext>
-    </div>
-  );
-
-  function createTask(column, _newTask) {
-    const newTask = {
-      id: generateId(),
-      columnId: column.id,
-      data: _newTask,
-    };
-
-    setTasks([...tasks, newTask]);
-  }
 
   function onDragStart(event) {
     if (event.active.data.current?.type === "Task") {
@@ -105,7 +64,7 @@ function KanbanBoard() {
 
     // Im dropping a Task over another Task
     if (isActiveATask && isOverATask) {
-      setTasks((tasks) => {
+      todoTasks((tasks) => {
         const activeIndex = tasks.findIndex((t) => t.id === activeId);
         const overIndex = tasks.findIndex((t) => t.id === overId);
 
@@ -123,19 +82,49 @@ function KanbanBoard() {
 
     // Im dropping a Task over a column
     if (isActiveATask && isOverAColumn) {
-      setTasks((tasks) => {
+      todoTasks((tasks) => {
         const activeIndex = tasks.findIndex((t) => t.id === activeId);
 
         tasks[activeIndex].columnId = overId;
-
+        console.log("DROPPING TASK OVER COLUMN", { activeIndex });
         return arrayMove(tasks, activeIndex, activeIndex);
       });
     }
   }
-}
 
-function generateId() {
-  return Math.floor(Math.random() * 100000001);
+  return (
+    <>
+      <div className="w-full h-screen flex flex-col gap-4 justify-center items-center bg-[#f9fbfd]">
+        <TaskModal setTodoTasks={setTodoTasks} />
+        <DndContext
+          sensors={sensors}
+          onDragStart={onDragStart}
+          onDragOver={onDragOver}
+        >
+          <div className="flex flex-row gap-8 justify-center items-center">
+            {column.map((data, index) => (
+              <TaskColoumn
+                key={index}
+                columnName={data.name}
+                todoTasks={todoTasks.filter(
+                  (task) => task.columnId === data.id
+                )}
+                column={data}
+              />
+            ))}
+          </div>
+          {createPortal(
+          <DragOverlay>
+            {activeTask && (
+              <Task
+                task={activeTask}
+              />
+            )}
+          </DragOverlay>,
+          document.body
+        )}
+        </DndContext>
+      </div>
+    </>
+  );
 }
-
-export default KanbanBoard;

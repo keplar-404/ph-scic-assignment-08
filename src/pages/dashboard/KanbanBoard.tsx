@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import ColumnContainer from "./ColumnContainer";
 import {
@@ -11,21 +12,10 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
 
+
+
 function KanbanBoard() {
-  const [columns, setColumns] = useState([
-    {
-      id: generateId(),
-      title: "Todo",
-    },
-    {
-      id: generateId(),
-      title: "Ongoing",
-    },
-    {
-      id: generateId(),
-      title: "Completed",
-    },
-  ]);
+  const [columns, setColumns] = useState([]);
 
   const [tasks, setTasks] = useState([]);
 
@@ -41,7 +31,15 @@ function KanbanBoard() {
 
   return (
     <div
-      className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden px-[40px] bg-[#f9fbfd]
+      className="
+        m-auto
+        flex
+        min-h-screen
+        w-full
+        items-center
+        overflow-x-auto
+        overflow-y-hidden
+        px-[40px]
     "
     >
       <DndContext
@@ -51,20 +49,53 @@ function KanbanBoard() {
       >
         <div className="m-auto flex gap-4">
           <div className="flex gap-4">
+            
             {columns.map((col) => (
               <ColumnContainer
                 key={col.id}
                 column={col}
+                
+              
                 createTask={createTask}
+               
+                updateTask={updateTask}
                 tasks={tasks.filter((task) => task.columnId === col.id)}
               />
             ))}
+           
           </div>
+          <button
+            onClick={() => {
+              createNewColumn();
+            }}
+            className="
+      h-[60px]
+      w-[350px]
+      min-w-[350px]
+      cursor-pointer
+      rounded-lg
+      bg-mainBackgroundColor
+      border-2
+      border-columnBackgroundColor
+      p-4
+      ring-rose-500
+      hover:ring-2
+      flex
+      gap-2
+      "
+          >
+          
+            Add Column
+          </button>
         </div>
 
         {createPortal(
           <DragOverlay>
-            {activeTask && <TaskCard task={activeTask} />}
+            {activeTask && (
+              <TaskCard
+                task={activeTask}
+              />
+            )}
           </DragOverlay>,
           document.body
         )}
@@ -72,15 +103,44 @@ function KanbanBoard() {
     </div>
   );
 
-  function createTask(column, _newTask) {
+  function createTask(columnId) {
     const newTask = {
       id: generateId(),
-      columnId: column.id,
-      data: _newTask,
+      columnId,
+      content: `Task ${tasks.length + 1}`,
     };
 
     setTasks([...tasks, newTask]);
   }
+
+  
+
+  function updateTask(id, content) {
+    const newTasks = tasks.map((task) => {
+      if (task.id !== id) return task;
+      return { ...task, content };
+    });
+
+    setTasks(newTasks);
+  }
+
+  function createNewColumn() {
+    const columnToAdd = {
+      id: generateId(),
+      title: `Column ${columns.length + 1}`,
+    };
+
+    setColumns([...columns, columnToAdd]);
+  }
+
+  function deleteColumn(id) {
+    const filteredColumns = columns.filter((col) => col.id !== id);
+    setColumns(filteredColumns);
+
+    const newTasks = tasks.filter((t) => t.columnId !== id);
+    setTasks(newTasks);
+  }
+
 
   function onDragStart(event) {
     if (event.active.data.current?.type === "Task") {
@@ -127,7 +187,7 @@ function KanbanBoard() {
         const activeIndex = tasks.findIndex((t) => t.id === activeId);
 
         tasks[activeIndex].columnId = overId;
-
+        console.log("DROPPING TASK OVER COLUMN", { activeIndex });
         return arrayMove(tasks, activeIndex, activeIndex);
       });
     }
@@ -135,7 +195,8 @@ function KanbanBoard() {
 }
 
 function generateId() {
-  return Math.floor(Math.random() * 100000001);
+  /* Generate a random number between 0 and 10000 */
+  return Math.floor(Math.random() * 10001);
 }
 
 export default KanbanBoard;
