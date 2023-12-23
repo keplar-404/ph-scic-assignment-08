@@ -23,12 +23,12 @@ const style = {
   p: 4,
 };
 
-// type and taskId optional 
-export default function TaskModal({ createTask, column }) {
+// type and taskId optional
+export default function EditTaskModal({ taskdata, setTasks }) {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [age, setAge] = React.useState("");
+  const [age, setAge] = React.useState(null);
 
   const handleChange = (event) => {
     setAge(event.target.value);
@@ -52,24 +52,50 @@ export default function TaskModal({ createTask, column }) {
       return;
     }
 
-    const newTask = {
-    
-      title: title,
-      description: description,
-      priority: priority,
-      date: date,
-      column: "Todo",
-      columnId: column.id,
-    };
+    const localStorageTasksData = JSON.parse(
+      window.localStorage.getItem("tasksData")
+    );
 
-    createTask(column, newTask);
+    const newTasksDataForLocalStorage = localStorageTasksData.map((task) => {
+      if (task.id === taskdata.id) {
+        return {
+          ...task,
+          data: {
+            title,
+            description,
+            priority,
+            date,
+          },
+        };
+      }
+      return task;
+    });
+
+    window.localStorage.setItem(
+      "tasksData",
+      JSON.stringify(newTasksDataForLocalStorage)
+    );
+
+    setTasks((tasks) => {
+      return tasks.map((data) => {
+        if (data.id === taskdata.id) {
+          data.data.title = title;
+          data.data.description = description;
+          data.data.priority = priority;
+          data.data.date = date;
+        }
+        return data;
+      });
+    });
+
     handleClose();
+    toast.success("Successfully task updated");
   };
 
   return (
     <div>
       <Button onClick={handleOpen} variant="contained" className="w-full">
-        Add task
+        Edit task
       </Button>
       <Modal
         open={open}
@@ -82,6 +108,7 @@ export default function TaskModal({ createTask, column }) {
             id="outlined-basic"
             label="Title"
             variant="outlined"
+            defaultValue={taskdata.data.title}
             inputRef={titleRef}
           />
 
@@ -91,18 +118,20 @@ export default function TaskModal({ createTask, column }) {
             multiline
             maxRows={4}
             inputRef={descriptionRef}
+            defaultValue={taskdata.data.description}
           />
-          <input type="date" ref={timeRef} />
+          <input type="date" ref={timeRef} defaultValue={taskdata.data.date} />
 
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">Priority</InputLabel>
             <Select
               labelId="demo-simple-select-label"
               id="demo-simple-select"
-              value={age}
+              value={age || taskdata.data.priority}
               label="Priority"
               onChange={handleChange}
               inputRef={priorityRef}
+              defaultValue={taskdata.data.priority}
             >
               <MenuItem value={"low"}>Low</MenuItem>
               <MenuItem value={"moderate"}>Moderate</MenuItem>

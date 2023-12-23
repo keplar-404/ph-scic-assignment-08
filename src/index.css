@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.btn {
+  display: inline-flex;
+  padding: 0.875rem 1.75rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 0.3125rem;
+  background: linear-gradient(98deg, #fa5a22 3.19%, #fe5629 105.28%);
+  color: #fff;
+  font-family: "Cabin", sans-serif;
+  font-size: 1.125rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: -0.01875rem;
+}
+
+.responsive {
+  @apply sm:w-[90dvw] md:w-[80dvw] xl:w-[80dvw] 2xl:w-[1368px];
+}
+.glassEffect {
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(18.5px);
+}

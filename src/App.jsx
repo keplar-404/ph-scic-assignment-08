@@ -6,6 +6,9 @@ import LayoutMain from "./pages/layout/MainLayout";
 import Home from "./pages/home/Home";
 import Dashboard from "./pages/dashboard/Dashboard";
 import { Toaster } from "react-hot-toast";
+import Register from "./pages/register/Register";
+import Login from "./pages/login/Login";
+import AboutUs from "./pages/AboutUs";
 
 const router = createBrowserRouter([
   {
@@ -21,7 +24,23 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
+        element: <Home />,
+      },
+      {
+        path: "/about",
+        element: <AboutUs />,
+      },
+      {
+        path: "/dashboard",
         element: <Dashboard />,
+      },
+      {
+        path: "/register",
+        element: <Register />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
       },
     ],
   },

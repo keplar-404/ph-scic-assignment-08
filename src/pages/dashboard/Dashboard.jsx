@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 import ColumnContainer from "./ColumnContainer";
 import {
   DndContext,
@@ -10,76 +10,105 @@ import {
 import { arrayMove } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
+import RedirectUser from "../../components/RedirectUser";
+import { UserContext } from "../../components/AuthContextWraper";
+import { CircularProgress } from "@mui/material";
+import toast from "react-hot-toast";
 
 function KanbanBoard() {
   const [columns, setColumns] = useState([
     {
-      id: generateId(),
+      id: 1,
       title: "Todo",
     },
     {
-      id: generateId(),
+      id: 2,
       title: "Ongoing",
     },
     {
-      id: generateId(),
+      id: 3,
       title: "Completed",
     },
   ]);
-
+  const { userData, setUserData } = useContext(UserContext);
   const [tasks, setTasks] = useState([]);
-
   const [activeTask, setActiveTask] = useState(null);
+
+  useEffect(() => {
+    const tasksData =
+      JSON.parse(window.localStorage.getItem("tasksData")) || [];
+    setTasks(tasksData);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 10,
+        distance: 16,
       },
     })
   );
 
-  return (
-    <div
-      className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden px-[40px] bg-[#f9fbfd]
-    "
-    >
-      <DndContext
-        sensors={sensors}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-      >
-        <div className="m-auto flex gap-4">
-          <div className="flex gap-4">
-            {columns.map((col) => (
-              <ColumnContainer
-                key={col.id}
-                column={col}
-                createTask={createTask}
-                tasks={tasks.filter((task) => task.columnId === col.id)}
-              />
-            ))}
-          </div>
-        </div>
+  if (userData === "loading") {
+    return (
+      <div className="w-full h-screen flex justify-center items-center">
+        <CircularProgress />
+      </div>
+    );
+  }
 
-        {createPortal(
-          <DragOverlay>
-            {activeTask && <TaskCard task={activeTask} />}
-          </DragOverlay>,
-          document.body
-        )}
-      </DndContext>
-    </div>
+  return (
+    <RedirectUser>
+      <div
+        className="w-full  flex justify-center items-center mt-[6rem] mb-[10rem]"
+      >
+        <DndContext
+          sensors={sensors}
+          onDragStart={onDragStart}
+          onDragOver={onDragOver}
+        >
+          {/* <div className=""> */}
+            <div className="flex sm:flex-col lg:flex-row justify-center items-center w-full gap-8">
+              {columns.map((col) => (
+                <ColumnContainer
+                  key={col.id}
+                  column={col}
+                  createTask={createTask}
+                  deleteTask={deleteTask}
+                  tasks={tasks.filter((task) => task.columnId === col.id)}
+                  setTasks={setTasks}
+                />
+              ))}
+            </div>
+          {/* </div> */}
+
+          {createPortal(
+            <DragOverlay>
+              {activeTask && <TaskCard task={activeTask} />}
+            </DragOverlay>,
+            document.body
+          )}
+        </DndContext>
+      </div>
+    </RedirectUser>
   );
 
   function createTask(column, _newTask) {
+
     const newTask = {
       id: generateId(),
       columnId: column.id,
       data: _newTask,
     };
+    const newGeneratedTasks = [...tasks, newTask];
+    window.localStorage.setItem("tasksData", JSON.stringify(newGeneratedTasks));
+    setTasks(newGeneratedTasks);
+  }
 
-    setTasks([...tasks, newTask]);
+  function deleteTask(id) {
+    const filteredTasks = tasks.filter((data) => data.id !== id);
+    window.localStorage.setItem("tasksData", JSON.stringify(filteredTasks));
+    setTasks(filteredTasks);
+    toast.success("Successfully task deleted")
   }
 
   function onDragStart(event) {
@@ -112,10 +141,25 @@ function KanbanBoard() {
         if (tasks[activeIndex].columnId != tasks[overIndex].columnId) {
           // Fix introduced after video recording
           tasks[activeIndex].columnId = tasks[overIndex].columnId;
-          return arrayMove(tasks, activeIndex, overIndex - 1);
+
+          const newCreatedTasksArray = arrayMove(
+            tasks,
+            activeIndex,
+            overIndex - 1
+          );
+          window.localStorage.setItem(
+            "tasksData",
+            JSON.stringify(newCreatedTasksArray)
+          );
+          return newCreatedTasksArray;
         }
 
-        return arrayMove(tasks, activeIndex, overIndex);
+        const newCreatedTasksArray = arrayMove(tasks, activeIndex, overIndex);
+        window.localStorage.setItem(
+          "tasksData",
+          JSON.stringify(newCreatedTasksArray)
+        );
+        return newCreatedTasksArray;
       });
     }
 
@@ -128,7 +172,12 @@ function KanbanBoard() {
 
         tasks[activeIndex].columnId = overId;
 
-        return arrayMove(tasks, activeIndex, activeIndex);
+        const newCreatedTasksArray = arrayMove(tasks, activeIndex, activeIndex);
+        window.localStorage.setItem(
+          "tasksData",
+          JSON.stringify(newCreatedTasksArray)
+        );
+        return newCreatedTasksArray;
       });
     }
   }

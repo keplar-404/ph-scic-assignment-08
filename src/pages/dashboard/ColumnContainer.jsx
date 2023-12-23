@@ -5,7 +5,7 @@ import TaskCard from "./TaskCard";
 import { Button } from "@mui/material";
 import TaskModal from "./Modal";
 
-function ColumnContainer({ column, createTask, tasks }) {
+function ColumnContainer({ column, createTask, deleteTask, tasks, setTasks }) {
   const tasksIds = useMemo(() => {
     return tasks.map((task) => task.id);
   }, [tasks]);
@@ -43,7 +43,7 @@ function ColumnContainer({ column, createTask, tasks }) {
       <div className="bg-slate-200 flex flex-grow flex-col gap-4 p-2 overflow-x-hidden overflow-y-auto">
         <SortableContext items={tasksIds}>
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard key={task.id} task={task} setTasks={setTasks}  deleteTask={deleteTask} />
           ))}
         </SortableContext>
       </div>
@@ -51,7 +51,7 @@ function ColumnContainer({ column, createTask, tasks }) {
 
       {column.title === "Todo" && (
         <>
-          <TaskModal column={column} createTask={createTask} />
+          <TaskModal column={column} createTask={createTask}  />
         </>
       )}
     </div>

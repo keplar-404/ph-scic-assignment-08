@@ -9,8 +9,10 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import React from "react";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditTaskModal from "./EditTask";
 
-function TaskCard({ task }) {
+function TaskCard({ task, deleteTask, setTasks }) {
   const {
     setNodeRef,
     attributes,
@@ -63,7 +65,6 @@ function TaskCard({ task }) {
             <div className="flex w-full justify-between">
               <p>{task.data.title}</p>
 
-             
               {task.data.priority === "low" && (
                 <p
                   className={`px-[13px] py-[4px] rounded-2xl bg-yellow-200 text-[13px]`}
@@ -87,9 +88,13 @@ function TaskCard({ task }) {
               )}
             </div>
           </AccordionSummary>
+          <div onClick={() => deleteTask(task.id)}>
+            <DeleteIcon className="mr-[3px]" />
+          </div>
         </div>
         <AccordionDetails>
-          <p>{task.data.description}</p>
+          <EditTaskModal taskdata={task} setTasks={setTasks} />
+          <p className="mt-4">{task.data.description}</p>
           <p className="mt-[3rem]">
             <span className="font-bold">Deadline:</span> {task.data.date}
           </p>
